@@ -1,4 +1,29 @@
-# Project exclude paths
-/.gradle/
-/app/build/
-/build/
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.iws
+.project
+.settings
+.classpath
+bin/
+gen/
+out/
+.DS_Store
+
+# Gradle
+.gradle/
+build/
+app/build/
+gradlew
+gradlew.bat
+gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration
+local.properties
+
+# Log / Memory Dumps
+*.log
+*.hprof
+
+# Screenshots (optional, but keep if you want them on GitHub)
+# screenshots/
