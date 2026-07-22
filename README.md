@@ -6,9 +6,9 @@
 
 berikut adalah tampilan dari aplikasi saya:
 
-|             sebelum di ubah              |             setelah diubah              |
-|:----------------------------------------:|:---------------------------------------:|
-| ![Screenshot 1](screenshots/form.png) | ![Screenshot 2](screenshots/beranda.png) |
+|             sebelum di ubah              |            setelah diubah             |
+|:----------------------------------------:|:-------------------------------------:|
+| ![Screenshot 1](screenshots/beranda.png) | ![Screenshot 2](screenshots/form.png) |
 
 ---
 
