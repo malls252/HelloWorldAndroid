@@ -4,14 +4,19 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,16 +25,7 @@ import com.example.helloworld.ui.theme.HelloWorldTheme
 
 /**
  * MINGGU 1 — Pemrograman Mobile Android
- *
- * GreetingScreen adalah Composable Function utama.
- *
- * Konsep yang dipraktikkan di sini:
- * 1. @Composable annotation
- * 2. State management dengan remember + mutableStateOf
- * 3. Layout dengan Column, Row, Spacer
- * 4. Modifier untuk styling
- * 5. Material3 components (TextField, Button, Card, Text)
- * 6. AnimatedVisibility untuk animasi sederhana
+ * TUGAS: Form Sederhana (Nama & NIM/NIP)
  */
 @Composable
 fun GreetingScreen() {
@@ -37,26 +33,34 @@ fun GreetingScreen() {
     // ==========================================
     // STATE MANAGEMENT
     // ==========================================
-    // 'remember' menjaga state agar tidak reset saat recomposition
-    // 'mutableStateOf' membuat state yang reaktif — UI otomatis update saat berubah
     var name by remember { mutableStateOf("") }
-    var isGreeted by remember { mutableStateOf(false) }
+    var idNumber by remember { mutableStateOf("") }
+    var submittedName by remember { mutableStateOf("") }
+    var submittedId by remember { mutableStateOf("") }
+    var isSubmitted by remember { mutableStateOf(false) }
+
+    // State untuk Validasi (Bonus)
+    val isNameValid = name.isNotBlank()
+    val isIdNumeric = idNumber.all { it.isDigit() } && idNumber.isNotBlank()
+    val canSubmit = isNameValid && isIdNumeric
 
     // ==========================================
     // UI LAYOUT
     // ==========================================
     Column(
         modifier = Modifier
-            .fillMaxSize()                  // Isi seluruh layar
-            .padding(24.dp),               // Padding 24dp di semua sisi
+            .fillMaxSize()
+            .padding(24.dp)
+            .verticalScroll(rememberScrollState()), // Support layar kecil/keyboard muncul
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
+        Spacer(modifier = Modifier.height(32.dp))
 
         // ── Icon Android ──
         Icon(
             imageVector = Icons.Default.Person,
-            contentDescription = "Android Logo",
+            contentDescription = "User Icon",
             modifier = Modifier.size(72.dp),
             tint = MaterialTheme.colorScheme.primary
         )
@@ -65,22 +69,22 @@ fun GreetingScreen() {
 
         // ── Judul ──
         Text(
-            text = "Hello World!",
-            fontSize = 32.sp,
+            text = "Form Pendaftaran",
+            fontSize = 28.sp,
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.primary,
             textAlign = TextAlign.Center
         )
 
         Text(
-            text = "Pemrograman Mobile Android — Minggu 1",
+            text = "Minggu 1 — Tugas Pemrograman Mobile",
             fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 4.dp, bottom = 32.dp)
         )
 
-        // ── Card Input ──
+        // ── Card Form ──
         Card(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
@@ -90,40 +94,64 @@ fun GreetingScreen() {
                 modifier = Modifier.padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "Siapa namamu?",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium,
-                    modifier = Modifier.padding(bottom = 12.dp)
-                )
-
-                // OutlinedTextField dengan onValueChange untuk state update
+                // Input Nama Lengkap
                 OutlinedTextField(
                     value = name,
-                    onValueChange = { newValue ->
-                        // Setiap kali input berubah, state 'name' diperbarui
-                        // Ini memicu recomposition pada semua Composable yang membaca 'name'
-                        name = newValue
-                        isGreeted = false
+                    onValueChange = { 
+                        name = it
+                        isSubmitted = false 
                     },
-                    label = { Text("Masukkan nama kamu") },
-                    placeholder = { Text("Contoh: Budi Santoso") },
+                    label = { Text("Nama Lengkap") },
+                    placeholder = { Text("Contoh: Hikmal Akbar") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    isError = name.isEmpty() && isSubmitted.not(), // Indikasi error jika kosong
+                    supportingText = {
+                        if (name.isEmpty()) Text("Nama tidak boleh kosong")
+                    }
                 )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Button menggunakan lambda untuk onClick
+                // Input NIM/NIP
+                OutlinedTextField(
+                    value = idNumber,
+                    onValueChange = { 
+                        if (it.all { char -> char.isDigit() }) idNumber = it
+                        isSubmitted = false 
+                    },
+                    label = { Text("NIM / NIP") },
+                    placeholder = { Text("Contoh: 2100123") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    isError = !idNumber.all { it.isDigit() } || (idNumber.isEmpty() && isSubmitted.not()),
+                    supportingText = {
+                        if (idNumber.isNotEmpty() && !idNumber.all { it.isDigit() }) {
+                            Text("NIM harus berupa angka")
+                        } else if (idNumber.isEmpty()) {
+                            Text("NIM tidak boleh kosong")
+                        }
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Button Submit
                 Button(
-                    onClick = { isGreeted = true },
-                    enabled = name.isNotBlank(), // Disable jika nama kosong
+                    onClick = { 
+                        submittedName = name
+                        submittedId = idNumber
+                        isSubmitted = true 
+                    },
+                    enabled = canSubmit, // Validasi Bonus: Button aktif jika valid
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Text(
-                        text = "Sapa Aku! 👋",
+                        text = "Submit Data",
                         fontSize = 16.sp,
                         modifier = Modifier.padding(vertical = 4.dp)
                     )
@@ -133,47 +161,51 @@ fun GreetingScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // ── Greeting Result dengan AnimatedVisibility ──
-        // AnimatedVisibility hanya muncul saat isGreeted = true
+        // ── Output Result ──
         AnimatedVisibility(
-            visible = isGreeted && name.isNotBlank(),
+            visible = isSubmitted,
             enter = fadeIn() + slideInVertically()
         ) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer
                 )
             ) {
-                Column(
+                Row(
                     modifier = Modifier.padding(20.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "🎉", fontSize = 40.sp)
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Halo, $name!",
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        textAlign = TextAlign.Center
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Result",
+                        tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.size(32.dp)
                     )
-                    Text(
-                        text = "Selamat datang di Android Development!\nMari belajar bersama 🚀",
-                        fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column {
+                        Text(
+                            text = "Data Terkirim:",
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Text(
+                            text = "Nama: $submittedName",
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                        Text(
+                            text = "NIM/NIP: $submittedId",
+                            color = MaterialTheme.colorScheme.onSecondaryContainer
+                        )
+                    }
                 }
             }
         }
     }
 }
 
-// Preview untuk melihat UI di Android Studio tanpa emulator
-@Preview(showBackground = true, name = "Greeting Screen Preview")
+@Preview(showBackground = true, name = "Form Screen Preview")
 @Composable
 fun GreetingScreenPreview() {
     HelloWorldTheme {
